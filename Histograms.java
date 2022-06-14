@@ -123,6 +123,28 @@ public class Histograms {
     //Function for linear color adaption with an upper and a lower threshold as input
     public Picture linearColorAdaption (Picture originalImg, int lowerThreshold, int upperThreshold){
         int[] classification = new int[256];
+        
+        //For DAU ("dumbest imagineable user") -> so there are no input errors
+        if (lowerThreshold == upperThreshold) {
+            lowerThreshold -= 1;
+            upperThreshold += 1;
+        }
+        if (lowerThreshold < 0) {
+            lowerThreshold = 0;            
+        }else if (lowerThreshold > 255) {
+            lowerThreshold = 255;            
+        }
+        if (upperThreshold < 0) {
+            upperThreshold = 0;            
+        }else if (upperThreshold > 255) {
+            upperThreshold = 255;            
+        }
+        if (lowerThreshold > upperThreshold) {
+            int a = lowerThreshold;
+            lowerThreshold = upperThreshold;
+            upperThreshold = a;
+        }
+        
 
         for(int i = 0; i < 256; i++) {
             if(i < lowerThreshold) {
@@ -155,6 +177,11 @@ public class Histograms {
 
     //Function for gamma correcture with a gamma value as input
     public Picture gammaCorrecture (Picture originalImg, double gamma) {
+        //For DAU ("dumbest imagineable user") -> so there are no input errors
+        if (gamma < 0.0) {
+            gamma = 0.0;
+        }
+        
         int[] classification = new int[256]; //Creating a new integer array for classifying the color values
         //Iterating though the array and applying the gamma value
         for(int i=0; i < 256; i++) {
