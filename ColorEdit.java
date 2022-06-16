@@ -231,12 +231,24 @@ public class ColorEdit {
 
     //Changing the saturation of the different color sections
     public Picture changeSaturation (Picture originalImg, double factor_r, double factor_g, double factor_b) {
+        //For DAU ("dumbest imagineable user") -> so there are no input errors
+        if (factor_r < 0) {
+            factor_r = 0.0;
+        }
+        if (factor_g < 0) {
+            factor_g = 0.0;
+        }
+        if (factor_b < 0) {
+            factor_b = 0.0;
+        }
+        
+        
         int width = originalImg.getWidth();
         int height = originalImg.getHeight();
 
         Color[][] pixelOld= originalImg.getPixelArray();
         Color[][] pixelNew = new Color[width][height];
-        Color colorSat = Color.GREEN;
+        Color colorSat = Color.GREEN;   //Just as a default value
 
         for(int x=0; x < width; x++) {
             for(int y=0;y < height; y++) {
