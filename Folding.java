@@ -31,6 +31,129 @@ public class Folding {
         Color[][] pixelOld= originalImg.getPixelArray();
         Color[][] pixelNew = originalImg.getPixelArray();
 
+        //Exception for the left part of the picture
+        System.out.println("Left");
+        for (int x = 1; x < filter.length/2; x++) {
+            double[][] newFilter = createMatrixForBlur((int)Math.pow(1+2*x, 2));
+            System.out.println(newFilter.length);
+            for (int y = x; y < height - x; y++) {
+                //Initialising and declaring default values for the red, green and blue color values
+                double red, green, blue = green = red = 0.0;
+
+                //Declaring variables for applying the matrices on the the color values
+
+                int xx = x - newFilter.length/2;
+                int yy = y - newFilter.length/2;
+
+                //Applying the matrices on the color values while going through the matrix
+                for (int i = 0; i < newFilter.length; i++) {
+                    for (int j = 0; j < newFilter.length; j++) {
+                        //Mulitplying the color values by the filter
+                        red   += newFilter[i][j] * pixelOld[xx+i][yy+j].getRed();
+                        green += newFilter[i][j] * pixelOld[xx+i][yy+j].getGreen();
+                        blue  += newFilter[i][j] * pixelOld[xx+i][yy+j].getBlue();
+
+                    }
+                }
+
+                //Setting a new color to the pixel and check if the new color values are inside the 8bit color boundaries
+                pixelNew[x][y] = new Color(validColor(red), validColor(green), validColor(blue));
+
+            }
+        }
+        //Exception for the right part of the picture
+        System.out.println("Right");
+        for (int x = width - 1; x >= width - filter.length/2; x--) {
+            double[][] newFilter = createMatrixForBlur((int)Math.pow(1+2*(width-x), 2));
+            System.out.println(newFilter.length);
+            for (int y = width - x; y < height -(width-x); y++) {
+                //Initialising and declaring default values for the red, green and blue color values
+                double red, green, blue = green = red = 0.0;
+
+                //Declaring variables for applying the matrices on the the color values
+
+                int xx = x - newFilter.length/2-1;
+                int yy = y - newFilter.length/2;
+
+                //Applying the matrices on the color values while going through the matrix
+                for (int i = 0; i < newFilter.length; i++) {
+                    for (int j = 0; j < newFilter.length; j++) {
+                        //Mulitplying the color values by the filter
+                        red   += newFilter[i][j] * pixelOld[xx+i][yy+j].getRed();
+                        green += newFilter[i][j] * pixelOld[xx+i][yy+j].getGreen();
+                        blue  += newFilter[i][j] * pixelOld[xx+i][yy+j].getBlue();
+
+                    }
+                }
+
+                //Setting a new color to the pixel and check if the new color values are inside the 8bit color boundaries
+                pixelNew[x][y] = new Color(validColor(red), validColor(green), validColor(blue));
+
+            }
+        }
+        
+        //Exception for the upper part of the picture
+        System.out.println("Upper");
+        for (int y = 1; y < filter.length/2; y++) {
+            double[][] newFilter = createMatrixForBlur((int)Math.pow(1+2*y, 2));
+            System.out.println(newFilter.length);
+            for (int x = y; x < width - y; x++) {
+                //Initialising and declaring default values for the red, green and blue color values
+                double red, green, blue = green = red = 0.0;
+
+                //Declaring variables for applying the matrices on the the color values
+
+                int xx = x - newFilter.length/2;
+                int yy = y - newFilter.length/2;
+
+                //Applying the matrices on the color values while going through the matrix
+                for (int i = 0; i < newFilter.length; i++) {
+                    for (int j = 0; j < newFilter.length; j++) {
+                        //Mulitplying the color values by the filter
+                        red   += newFilter[i][j] * pixelOld[xx+i][yy+j].getRed();
+                        green += newFilter[i][j] * pixelOld[xx+i][yy+j].getGreen();
+                        blue  += newFilter[i][j] * pixelOld[xx+i][yy+j].getBlue();
+
+                    }
+                }
+
+                //Setting a new color to the pixel and check if the new color values are inside the 8bit color boundaries
+                pixelNew[x][y] = new Color(validColor(red), validColor(green), validColor(blue));
+
+            }
+        }
+        //Exception for the lower part of the picture
+        System.out.println("Lower");
+        for (int y = height - 1; y >= height - filter.length/2; y--) {
+            double[][] newFilter = createMatrixForBlur((int)Math.pow(1+2*(height-y), 2));
+            System.out.println(newFilter.length);
+            for (int x = height - y; x < width -(height-y); x++) {
+                //Initialising and declaring default values for the red, green and blue color values
+                double red, green, blue = green = red = 0.0;
+
+                //Declaring variables for applying the matrices on the the color values
+
+                int xx = x - newFilter.length/2;
+                int yy = y - newFilter.length/2-1;
+
+                //Applying the matrices on the color values while going through the matrix
+                for (int i = 0; i < newFilter.length; i++) {
+                    for (int j = 0; j < newFilter.length; j++) {
+                        //Mulitplying the color values by the filter
+                        red   += newFilter[i][j] * pixelOld[xx+i][yy+j].getRed();
+                        green += newFilter[i][j] * pixelOld[xx+i][yy+j].getGreen();
+                        blue  += newFilter[i][j] * pixelOld[xx+i][yy+j].getBlue();
+
+                    }
+                }
+
+                //Setting a new color to the pixel and check if the new color values are inside the 8bit color boundaries
+                pixelNew[x][y] = new Color(validColor(red), validColor(green), validColor(blue));
+
+            }
+        }
+        
+
         //Going through the array with a gap of the half filter length to prevent unexpected image which could lead to unintended errors
         for(int x=filter.length/2; x < width - filter.length/2; x++) {
             for(int y=filter.length/2;y < height - filter.length/2; y++) {
@@ -81,16 +204,16 @@ public class Folding {
         if (size > Math.pow(originalImg.getHeight(), 2) * 0.8) {
             size = (int) (Math.pow(originalImg.getHeight(), 2) * 0.8);
         }
-        
+
         double[][] matrix = createMatrixForBlur(size);  //Creating a valid matrix with a given size
         return folding(originalImg, matrix);
     }
-    
+
     //Function for an automatic blur -> it is adjusted to the image size
     public Picture automaticBlur (Picture originalImg) {
         //Calculating a value for an automatic blur -> matrix size
         int size = (int) (originalImg.getWidth() * originalImg.getHeight()) / 10000;
-        
+
         double[][] matrix = createMatrixForBlur(size);  //Creating a valid matrix with a calculated size
         return folding(originalImg, matrix);
     }
@@ -107,15 +230,14 @@ public class Folding {
         if (size > Math.pow(originalImg.getHeight(), 2) * 0.8) {
             size = (int) (Math.pow(originalImg.getHeight(), 2) * 0.8);
         }
-        
-        
+
         double[][] matrix = createMatrixForBlur(size);  //Creating a valid matrix with a given size and default values
         double sigma = matrix.length / 6; //Calculating sigma
 
         double midCoord = matrix.length / 2 - 0.5;  //Matrix length will always be uneven (function for creating the matrix). The middle point is 0.5 lower because arrays have a starting index of 0
 
         double sum = 0; //Creating a variable to calculate the sum of the matrix values
-        
+
         //Calculating every value for the matrix with gaussian calculations
         for (int i = 0; i < matrix.length; i++) {
             for (int j = 0; j < matrix.length; j++) {
@@ -125,7 +247,7 @@ public class Folding {
                 sum += matrix[i][j] = Math.exp(-(double)(Math.pow(radius, 2)) / (2 * Math.pow(sigma, 2)));
             }
         }
-        
+
         //Calculating k and applying it to the matrix
         double k = 1 / sum;
         for (int i = 0; i < matrix.length; i++) { 
