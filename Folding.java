@@ -7,8 +7,8 @@
  * Funtions:
  * - standardBlur (originalImg)
  * - intentionalBlur (originalImg, int filterSize)
- * - automaticBlur (originalImg
- * - gaussianBlur (originalImg)
+ * - automaticBlur (originalImg)
+ * - gaussianBlur (originalImg, int filterSize)
  * - sharpen (originalImg)
  * - relief (originalImg)
  * - edgeDetectionHorizontally (originalImg)
@@ -71,6 +71,17 @@ public class Folding {
 
     //Function for a blur which can be customized by the user
     public Picture intentionalBlur (Picture originalImg, int size) {
+        //For DAU ("dumbest imagineable user") -> so there are no input errors => not that important in this case because the program needs a lot of time for large blur sizes
+        if (size < 0) {
+            size = 0;
+        }
+        if (size > Math.pow(originalImg.getWidth(), 2) * 0.8) {
+            size = (int) (Math.pow(originalImg.getWidth(), 2) * 0.8);
+        }
+        if (size > Math.pow(originalImg.getHeight(), 2) * 0.8) {
+            size = (int) (Math.pow(originalImg.getHeight(), 2) * 0.8);
+        }
+        
         double[][] matrix = createMatrixForBlur(size);  //Creating a valid matrix with a given size
         return folding(originalImg, matrix);
     }
@@ -86,6 +97,18 @@ public class Folding {
 
     //Function for a blur with the distance taken into consideration -> normal distribution
     public Picture gaussianBlur (Picture originalImg, int size) {
+        //For DAU ("dumbest imagineable user") -> so there are no input errors
+        if (size < 0) {
+            size = 0;
+        }
+        if (size > Math.pow(originalImg.getWidth(), 2) * 0.8) {
+            size = (int) (Math.pow(originalImg.getWidth(), 2) * 0.8);
+        }
+        if (size > Math.pow(originalImg.getHeight(), 2) * 0.8) {
+            size = (int) (Math.pow(originalImg.getHeight(), 2) * 0.8);
+        }
+        
+        
         double[][] matrix = createMatrixForBlur(size);  //Creating a valid matrix with a given size and default values
         double sigma = matrix.length / 6; //Calculating sigma
 
@@ -188,6 +211,7 @@ public class Folding {
             validColor = 0;           
         } else {
             //The color remains the same
+            validColor = validColor;
         }  
         //Returning the new color
         return validColor;
