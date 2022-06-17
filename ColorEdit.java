@@ -14,6 +14,7 @@
  * - changeRedBlue (originalImg)
  * - changeGreenBlue (originalImg)
  * - changeSaturation (originalImg, factorR, factorG, factorB)
+ * - rgbAmplifier (originalImg)
  */
 
 import imp.*;
@@ -277,5 +278,52 @@ public class ColorEdit {
         }  
         //Returning the new color
         return (int)validColor;
+    }
+    
+    //Amplifying the strongest rgb value to achieve a special effect
+    public Picture rgbAmplifier (Picture originalImg) {
+        int width = originalImg.getWidth();
+        int height = originalImg.getHeight();
+
+        Color[][] pixelOld= originalImg.getPixelArray();
+        Color[][] pixelNew = new Color[width][height];
+        int red, green, blue = green = red = 0; //Just as a default value
+        Color newColor = Color.GREEN;
+        
+        //Iterating through the image
+        for (int x = 0; x < width; x++)  {
+            for (int y = 0; y < height; y++) {
+                //Getting the different color values
+                red = pixelOld[x][y].getRed();
+                green = pixelOld[x][y].getGreen();
+                blue = pixelOld[x][y].getBlue();
+                
+                //Finding the largest value of the image color values and creating a color with the strongest part of the picture
+                if (red > green && red > blue) {
+                    newColor = new Color(255, 0, 0);
+                }else if (green > red && green > blue) {
+                    newColor = new Color(0, 255, 0);
+                }else if (blue > red && blue > green) {
+                    newColor = new Color(0, 0, 255);
+                }
+                //Exceptions, if some colors have the same values
+                if (red == green && red == blue) {
+                    newColor = new Color(255, 255, 255);
+                }else if (red == green) {
+                    newColor = new Color(255, 255, 0);
+                }else if (red == blue) {
+                    newColor = new Color(255, 0, 255);
+                }else if (green == blue) {
+                    newColor = new Color(0, 255, 255);
+                }
+                //Creating a new picture with the new color
+                pixelNew[x][y] = newColor;
+            }
+        }
+        
+        //Returning and creating the new Picture
+        Picture newImg = new Picture();
+        newImg.setPixelArray(pixelNew); 
+        return newImg;
     }
 }
