@@ -22,11 +22,7 @@ public class Histograms {
 
         //Iterating through the input array and comparing the numbers
         for (int i = 0; i < input.length - 1; i++) {
-            if (input[i] > input[i+1]) {
-                output = input[i];
-            } else {
-                output = input[i+1];
-            }
+            if(input[i] > output) output = input[i];
         }
 
         //Returning the output
@@ -34,18 +30,21 @@ public class Histograms {
     }
 
     //Private Function for drawing a histogram of the color distribution -> just for visualization -> there's no need for this in the programm
-    private Picture drawHistogram(Picture originalImg, int[] distributionFrequency) {
+    public Picture drawHistogram(int[] distributionFrequency) {
         //Creating a new picture to display the histogram
         Picture newPicture = new Picture(256,100,"C0C0C0");
         newPicture.stroke(0);
 
-        Color[][] histogramArray = new Color[256][100];
-        int[] frequency = distributionFrequency(originalImg);   //Getting the distribution frequency
+        //Color[][] histogramArray = new Color[256][100];
+        //int[] frequency = distributionFrequency(originalImg);   //Getting the distribution frequency
 
-        int largestValue = largestNumber(frequency);    //Getting the largest number
-        for (int i = 0; i < 256; i++) {
-            if(distributionFrequency[i] > largestValue) largestValue = distributionFrequency[i];
+        int largestValue = largestNumber(distributionFrequency);    //Getting the largest number
+        System.out.println(largestValue);
+        System.out.println(distributionFrequency.length);
+        for (int word : distributionFrequency) {
+             //System.out.println(word);
         }
+       
         //Converting the numbers to fit them into the histogram
         //int[] numberSet = convertNumbers(frequency, largestValue);
 
@@ -64,7 +63,9 @@ public class Histograms {
     }
 
     //Private function for returning an array with the color distribution
-    private int[] distributionFrequency (Picture originalImg) {
+    public int[] distributionFrequency (Picture originalImg) {
+        
+        
         //Creating an array with an 8bit size for the brightness values and setting default values
         int[] brightness = new int[256];
         for (int i = 0; i < brightness.length; i++) {
