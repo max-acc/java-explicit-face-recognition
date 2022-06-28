@@ -1,19 +1,18 @@
-
 /**
  * Class for very simple face recognition.
  * This is not about classifying humans by their skin color (there are only 6 skincolors for simplyfying reasons).
  * It is not about racism or colorism in any thinkable way.
  * 
- * This website has been used color palette:
+ * This website's color palette has been used:
  * https://colorcodes.io/fair-skin-color-codes/
  * 
  * Required classes:
  * - Foling.java
  * - ColorEdit.java
- * - Gemetry.java
+ * - Geometry.java
  *
- * @author (your name)
- * @version (a version number or a date)
+ * @author Max Wenk
+ * @version 6/28/2022
  */
 
 import imp.*;
@@ -26,17 +25,135 @@ public class FaceRecognition
     private ColorEdit externClassColorEdit;
     private Geometry externClassGeometry;
 
-    public Picture newExtractFace (Picture originalImg) {
+    public Picture bokehEffect (Picture originalImg) {
+        //Eye detection
+        //Mouth/Nose detection
+        //Skin color detection
+
+        //Face-boundary detection
+        return originalImg;
+    }
+
+    public Picture faceRecognition (Picture originalImg) {
         int width = originalImg.getWidth();
         int height = originalImg.getHeight();
 
+        //Check, if the image has the correct size (not too large or too small)
+        if (checkImgSize(width, height) == false) return originalImg;
+
+        externClassFolding = new Folding();
+        externClassColorEdit = new ColorEdit();
+        Picture imgEdgeDetectionHorizontal = externClassFolding.edgeDetectionHorizontally(externClassColorEdit.greyScaleAvg(originalImg));
+        Picture imgEdgeDetectionVertical   = externClassFolding.edgeDetectionVertically(externClassColorEdit.greyScaleAvg(originalImg));
+        Color [][] pixelEdgeDetectionHorizontal = imgEdgeDetectionHorizontal.getPixelArray();
+        Color [][] pixelEdgeDetectionVertical   = imgEdgeDetectionVertical.getPixelArray();
+        Color[][] pixelEdgeDetectionComplete = addEdgeDetectionAndAmplify(width, height, pixelEdgeDetectionHorizontal, pixelEdgeDetectionVertical);
+
+        //Deleting unused variables => only "pixelEdgeDetectionComplete" remains
+        imgEdgeDetectionHorizontal  = null;
+        imgEdgeDetectionVertical    = null;
+        pixelEdgeDetectionHorizontal= null;
+        pixelEdgeDetectionVertical  = null;
+        System.gc();
+
+        //Eye detection
+        //Mouth/Nose detection
+
+        //Face-boundary detection
+        externClassGeometry = new Geometry();
+        int[][] facePositionInfoEdge = facePosition(originalImg);
+
+        //Skin color detection
+        int[][] facePositionInfoColor = skinColor(originalImg, facePositionInfoEdge);
+
+        int[][] facePositionInfo = facePositionInfoColor;
+        Color[][] output = originalImg.getPixelArray();
+        printPositionArray(facePositionInfo);
+
+        if (facePositionInfo.length == 1 && facePositionInfo[0][0] == 0 && facePositionInfo[0][1] == 0 && facePositionInfo[0][2] == 0 && facePositionInfo[0][3] == 0) {
+            System.out.println("Some required face matching criteria isn't met!");
+            Picture img = new Picture();
+            img.setPixelArray(output);
+            return img;
+        }
+
+        for (int i = 0; i < facePositionInfo.length; i++) {
+            if (facePositionInfo[i][0] == 0 || facePositionInfo[i][1] == 0) {
+                continue;
+            }
+            if (facePositionInfo[i][2] == 0 || facePositionInfo[i][3] == 0) {
+                continue;
+            }
+
+            int[][] matrix = externClassGeometry.ellipse(facePositionInfo[i][2], facePositionInfo[i][3]);
+            drawEllipse:
+            for (int x = 0; x < facePositionInfo[i][2]; x++) {
+                //System.out.println("First loop");
+                for (int y = 0; y < facePositionInfo[i][3]; y++) {
+                    //System.out.println("Second loop");
+
+                    if (matrix[x][y] == 1) {
+                        output[facePositionInfo[i][0] + x][facePositionInfo[i][1] + y] = Color.GREEN;
+                    } 
+                }
+            }
+        }
+
+        Picture newImg = new Picture();
+        newImg.setPixelArray(output);
+        return newImg;
+    }
+
+    private boolean checkImgSize(int width, int height) {
+        boolean correctSize = true;
+
         if (width < 100 || height < 100) {
             System.out.println("Image is too small");
-            return originalImg;
+            correctSize = false;
+            return correctSize;
         }else if (width > 2000 || height > 2000) {
-            System.out.println("Image is too big");
-            return originalImg;
+            System.out.println("Image is too large");
+            correctSize = false;
+            return correctSize;
         }
+        return correctSize;
+    }
+
+    //Function for skin color detection
+    private int[][] skinColor (Picture originalImg, int[][] possibleFacePosition) {
+        int end = possibleFacePosition.length;
+
+        for (int i = 0; i < possibleFacePosition.length-1; i++) {
+            if (possibleFacePosition[i][0] == 0 && possibleFacePosition[i][1] == 0 && possibleFacePosition[i][2] == 0 && possibleFacePosition[i][3] == 0) {
+                end--;
+                for (int j = i; j < possibleFacePosition.length-1; j++) {
+                    possibleFacePosition[j][0] = possibleFacePosition[j+1][0];
+                    possibleFacePosition[j][1] = possibleFacePosition[j+1][1];
+                    possibleFacePosition[j][2] = possibleFacePosition[j+1][2];
+                    possibleFacePosition[j][3] = possibleFacePosition[j+1][3];
+                }
+            }
+        }
+
+        if (false) {
+            System.out.println("Face color isn't matching!");
+            int[][] exeptionArray = new int[1][4];
+            return exeptionArray;
+        }
+
+        int[][] newFacePosition = new int[end][4];
+        for (int i = 0; i < end; i++) {
+            for (int j = 0; j < 4; j++) {
+                newFacePosition[i][j] = possibleFacePosition[i][j];
+            }
+        }
+        return newFacePosition;
+    }
+
+    //Function for face-boundary detection
+    private int[][] facePosition (Picture originalImg) {
+        int width = originalImg.getWidth();
+        int height = originalImg.getHeight();
 
         boolean orientationHorizontal;
         int smallestSide;
@@ -124,20 +241,6 @@ public class FaceRecognition
         System.gc();
         pixelEdgeDetectionComplete = addEdgeDetectionAndAmplify(width, height, pixelEdgeDetectionHorizontal, pixelEdgeDetectionVertical);
 
-        //Add both detected long edges
-        /*
-        for (int x = 0; x < originalImg.getWidth(); x++) {
-        for (int y = 0; y < originalImg.getHeight(); y++) {
-        if (pixelLongEdgesHorizontal[x][y] == Color.GREEN && pixelLongEdgesVertical[x][y] == Color.GREEN) {
-        pixelEdgeDetectionComplete[x][y] = Color.BLUE;
-        }else if (pixelLongEdgesHorizontal[x][y] == Color.GREEN || pixelLongEdgesVertical[x][y] == Color.GREEN) {
-        pixelEdgeDetectionComplete[x][y] = Color.GREEN;
-        }else {
-        pixelEdgeDetectionComplete[x][y] = Color.BLACK;
-        }
-        }
-        }*/
-
         //Vertical Detection
         int var;    //Variable for remembering things
         int largestValue;
@@ -149,9 +252,11 @@ public class FaceRecognition
                 largestFrequenceHorizontal[x][y] = 0;
             }
         }
+
+        //Getting the number of longer edges in a 0.1x0.3 area and write it to an array => shows where the most vertical strokes are
         largestValue = 0;
-        for (int x = 0; x < originalImg.getWidth()- (int)(smallestSide*0.1); x += (int)(smallestSide*0.05)) {
-            for (int y = 0; y < originalImg.getHeight()-(int)(smallestSide*0.3); y += (int)(smallestSide*0.05)) {
+        for (int x = 0; x < width -(int)(smallestSide*0.1); x += (int)(smallestSide*0.05)) {
+            for (int y = 0; y < height -(int)(smallestSide*0.3); y += (int)(smallestSide*0.05)) {
                 var = 0;
                 for (int i = 0; i < (int)(smallestSide*0.1); i++) {
                     for (int j = 0; j < (int)(smallestSide*0.2); j++) {
@@ -166,9 +271,10 @@ public class FaceRecognition
             }
         }
 
+        //Getting the number of longer edges in a 0.3x0.1 area and write it to an array => shows where the most horizontal strokes are
         largestValue = 0;
-        for (int x = 0; x < originalImg.getWidth()- (int)(smallestSide*0.3); x += (int)(smallestSide*0.05)) {
-            for (int y = 0; y < originalImg.getHeight()-(int)(smallestSide*0.1); y += (int)(smallestSide*0.05)) {
+        for (int x = 0; x < width - (int)(smallestSide*0.3); x += (int)(smallestSide*0.05)) {
+            for (int y = 0; y < height - (int)(smallestSide*0.1); y += (int)(smallestSide*0.05)) {
                 var = 0;
                 for (int i = 0; i < (int)(smallestSide*0.2); i++) {
                     for (int j = 0; j < (int)(smallestSide*0.1); j++) {
@@ -183,18 +289,23 @@ public class FaceRecognition
             }
         }
 
+        //Setting up arrays with the largest numbers of the horizontal and vertical areas
         var = 0;
         int var2 = 0;
+        //Calculating the size for these arrays
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 if (largestFrequenceVertical[x][y] != 0) var++;
                 if (largestFrequenceHorizontal[x][y] != 0) var2++;
             }
         }
+        //Initialising the arrays with a specific size
         int[]edgeFrequenceVertical = new int[var];
         int[]edgeFrequenceHorizontal = new int[var2];
+
         int var3 = 0;
         int var4 = 0;
+        //Writing the values from the areas to the number arrays (unsorted)
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 if (largestFrequenceVertical[x][y] != 0) {
@@ -211,6 +322,7 @@ public class FaceRecognition
                 }
             }
         }
+        //Sorting the number arrays descending
         for (int i = 0; i < edgeFrequenceVertical.length; i++)   {  
             for (int j = i + 1; j < edgeFrequenceVertical.length; j++)   {  
                 int tmp = 0;  
@@ -236,6 +348,7 @@ public class FaceRecognition
             //System.out.println(edgeFrequenceHorizontal[i]);  
         } 
 
+        //Finding vertical boundaries
         int[] startingPointX = new int[1000];
         int[] ellipseWidth = new int[1000];
         int[][] changedLargestFrequenceVertical = largestFrequenceVertical;
@@ -243,11 +356,9 @@ public class FaceRecognition
         complete:
         for (int i = 0; i < (int)(edgeFrequenceVertical.length*0.2)-1; i++) {
             int x1, y1 = x1 = 0;
-            //System.out.println(i);
             firstNumber:
             for(int x = 0; x < width; x++) {
                 for (int y = 0; y < height; y++) {
-                    //System.out.println(edgeFrequenceVertical[i]);
                     if (changedLargestFrequenceVertical[x][y] == edgeFrequenceVertical[i]) {
                         changedLargestFrequenceVertical[x][y] = 0;
                         System.out.println(x);
@@ -266,7 +377,6 @@ public class FaceRecognition
                             changedLargestFrequenceVertical2[x][y] = 0;
                             x2 = x;
                             y2 = y;
-                            //System.out.println(x2);
                             break search;
                         }
 
@@ -274,29 +384,23 @@ public class FaceRecognition
                 }
 
                 if ((x2-x1) > smallestSide*0.2/* || (largestFrequenceVertical[x2][y2] - largestFrequenceVertical[x1][y1]) > smallestSide*0.2*/)  {
-                    //System.out.println(x1);
-                    //System.out.println(x2);
-                    //System.out.print("Difference of values : ");
-                    //System.out.println(largestFrequenceVertical[x1][y1] - largestFrequenceVertical[x2][y2]);
                     startingPointX[i*j+j] = x1;
                     ellipseWidth[i*j+j] = (x2 - x1)+ detectionLine-1;
-                    //System.out.println(ellipseWidth[i]);
                 }
             }
         }
 
+        //Finding horizontal boundaries
         int[] startingPointY = new int[1000];
         int[] ellipseHeight = new int[1000];
-        int[][] changedLargestFrequenceHorizontal = largestFrequenceHorizontal;
+        int[][] changedLargestFrequenceHorizontal  = largestFrequenceHorizontal;
         int[][] changedLargestFrequenceHorizontal2 = largestFrequenceHorizontal;
         complete:
         for (int i = 0; i < (int)(edgeFrequenceVertical.length*0.2)-1; i++) {
             int x1, y1 = x1 = 0;
-            //System.out.println(i);
             firstNumber:
             for(int x = 0; x < width; x++) {
                 for (int y = 0; y < height; y++) {
-                    //System.out.println(edgeFrequenceVertical[i]);
                     if (changedLargestFrequenceHorizontal[x][y] == edgeFrequenceHorizontal[i]) {
                         changedLargestFrequenceHorizontal[x][y] = 0;
                         System.out.println(x);
@@ -315,78 +419,86 @@ public class FaceRecognition
                             changedLargestFrequenceHorizontal2[x][y] = 0;
                             x2 = x;
                             y2 = y;
-                            //System.out.println(x2);
                             break search;
                         }
-
                     }
                 }
-
                 if ((y2-y1) > smallestSide*0.2/* || (largestFrequenceVertical[x2][y2] - largestFrequenceVertical[x1][y1]) > smallestSide*0.2*/)  {
-                    //System.out.println(x1);
-                    //System.out.println(x2);
-                    //System.out.print("Difference of values : ");
-                    //System.out.println(largestFrequenceVertical[x1][y1] - largestFrequenceVertical[x2][y2]);
                     startingPointY[i*j+j] = y1;
                     ellipseHeight[i*j+j] = (y2 - y1)+ detectionLine-1;
-                    //System.out.println(ellipseWidth[i]);
                 }
             }
         }
-        
+
         Color [][] output = originalImg.getPixelArray();
-        
-        //Eye detection
-        //Mouth/Nose detection
-        //Skin color detection
+
+        int[][] ellipsePositionInfo = new int[startingPointX.length * startingPointY.length][4];
+
         //Draw an ellipse
-        externClassGeometry = new Geometry();
         Color green = Color.GREEN;
-        //int startingPointX = 30;
-        //int startingPointY = 0;
+        var = 0;
         for (int i = 0; i < ellipseWidth.length; i++) {
             if (ellipseWidth[i] == 0) {
-                    continue;
-                }
+                continue;
+            }
             for (int j = 0; j < ellipseHeight.length; j++) {
                 if (ellipseHeight[j] == 0) {
                     continue;
-                }
-                int[][] matrix = externClassGeometry.ellipse(ellipseWidth[i], ellipseHeight[j]);
-                System.out.print("StartingpointX: ");
-                System.out.println(startingPointX[i]);
-                System.out.print("StartingpointY: ");
-                System.out.println(startingPointY[i]);
-                System.out.print("width         : ");
-                System.out.println(ellipseWidth[i]);
-                System.out.print("Height        : ");
-                System.out.println(ellipseHeight[i]);
-                drawEllipse:
-                for (int x = 0; x < ellipseWidth[i]; x++) {
-                    //System.out.println("First loop");
-                    if (startingPointX[i] == 0) {
-                            break drawEllipse;
-                        }
-                    for (int y = 0; y < ellipseHeight[j]; y++) {
-                        //System.out.println("Second loop");
-                        if (startingPointY[j] == 0) {
-                            break drawEllipse;
-                        }
-                        if (matrix[x][y] == 1) {
-                            output[startingPointX[i] + x][startingPointY[j] + y] = green;
-                        }
-
+                }else {
+                    ellipsePositionInfo[var][0] = startingPointX[i];
+                    ellipsePositionInfo[var][1] = startingPointY[j];
+                    ellipsePositionInfo[var][2] = ellipseWidth[i];
+                    ellipsePositionInfo[var][3] = ellipseHeight[j];
+                    if (var >= 1) {
+                        if (ellipsePositionInfo[var-1][0] != ellipsePositionInfo[var][0] || ellipsePositionInfo[var-1][1] != ellipsePositionInfo[var][1] || ellipsePositionInfo[var-1][2] != ellipsePositionInfo[var][2] || ellipsePositionInfo[var-1][3] != ellipsePositionInfo[var][3]) {
+                            var++; 
+                        } 
                     }
-                }  
+                    if (var == 0) {
+                        var++;
+                    }
+
+                }
+
             }
         }
 
-        Picture newImg = new Picture();
-        newImg.setPixelArray(output); 
+        ellipsePositionInfo = removeDuplicates(ellipsePositionInfo);
+        //printPositionArray(ellipsePositionInfo);
+        return ellipsePositionInfo;       
+    }
 
-        //externClassColorEdit = new ColorEdit();
-        //Picture edited = externClassColorEdit.rgbAmplifier(newImg);
-        return newImg;
+    //Debugging function for printing the postion array
+    private void printPositionArray (int[][] facePositions) {
+        if(true) {
+            if (facePositions.length == 0) {System.out.print("Array is empty"); return;}
+            for (int i = 0; i < facePositions.length; i++) {
+                System.out.print(facePositions[i][0]);
+                System.out.print(" ");
+                System.out.print(facePositions[i][1]);
+                System.out.print(" ");
+                System.out.print(facePositions[i][2]);
+                System.out.print(" ");
+                System.out.print(facePositions[i][3]);
+                System.out.println(" ");
+            } 
+        }
+    }
+
+    private int[][] removeDuplicates(int[][/*static length of 4*/] input) {
+        int end = input.length;
+        for (int i = 0; i < end; i++) {
+            for(int j = i+1; j < end; j++) {
+                if (input[i][0] == input[j][0] && input[i][1] == input[j][1] && input[i][2] == input[j][2] && input[i][3] == input[j][3]) {
+                    input[j] = input[end-1];
+                    end--;
+                    j--;
+                }
+            }
+        }
+        int[][] output = new int[end][4];
+        System.arraycopy(input, 0, output, 0, end);
+        return output;
     }
 
     private Color[][] addEdgeDetectionAndAmplify(int width, int height, Color[][] inputHorizontal, Color[][] inputVertical) {
@@ -427,6 +539,7 @@ public class FaceRecognition
         return output;
     }
 
+    //---------------------- not in use -------------------------------------------------------------
     private Picture extractFace (Picture originalImg) {
         Color[] skinColors = {new Color(255, 204, 153), /*FFCC99*/
                 new Color(191, 153, 115),       /*BF9973*/ 
@@ -503,32 +616,4 @@ public class FaceRecognition
 
         return originalImg;
     }
-
-    private Picture greyScaleAvg (Picture originalImg) {
-        //Getting the width and the height of the original image
-        int width = originalImg.getWidth();
-        int height = originalImg.getHeight();
-
-        //Transforming the image to a two dimensional array and creating one for the new image
-        Color[][] pixelOld= originalImg.getPixelArray();
-        Color[][] pixelNew = new Color[width][height];
-        Color colorAvg = Color.GREEN; //Setting up a new color with a default value (just for debugging -> if there is something green in the picture, something went wrong)
-
-        //Changing every pixel of the old pixel array to the new one
-        for(int x=0; x < width; x++) {
-            for(int y=0;y < height; y++) {
-                //Calculating the average of all color brightnesses
-                int avg = (pixelOld[x][y].getRed() + pixelOld[x][y].getGreen() + pixelOld[x][y].getBlue()) / 3;
-                //Creating a new color and set it with the average saturation
-                colorAvg = new Color(avg, avg, avg);
-                pixelNew[x][y] = colorAvg;
-            }
-        }
-
-        //Transforming the new pixel arry into a new picture and return it
-        Picture newImg = new Picture();
-        newImg.setPixelArray(pixelNew); 
-        return newImg;
-    }
-
 }
