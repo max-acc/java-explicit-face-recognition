@@ -32,7 +32,7 @@ public class Folding {
         Color[][] pixelNew = originalImg.getPixelArray();
 
         //Exception for the left part of the picture
-        System.out.println("Left");
+        //System.out.println("Left");
         for (int x = 1; x < filter.length/2; x++) {
             double[][] newFilter = createMatrixForBlur((int)Math.pow(1+2*x, 2));
             System.out.println(newFilter.length);
@@ -62,7 +62,7 @@ public class Folding {
             }
         }
         //Exception for the right part of the picture
-        System.out.println("Right");
+        //System.out.println("Right");
         for (int x = width - 1; x >= width - filter.length/2; x--) {
             double[][] newFilter = createMatrixForBlur((int)Math.pow(1+2*(width-x), 2));
             System.out.println(newFilter.length);
@@ -93,7 +93,7 @@ public class Folding {
         }
         
         //Exception for the upper part of the picture
-        System.out.println("Upper");
+        //System.out.println("Upper");
         for (int y = 1; y < filter.length/2; y++) {
             double[][] newFilter = createMatrixForBlur((int)Math.pow(1+2*y, 2));
             System.out.println(newFilter.length);
@@ -123,7 +123,7 @@ public class Folding {
             }
         }
         //Exception for the lower part of the picture
-        System.out.println("Lower");
+        //System.out.println("Lower");
         for (int y = height - 1; y >= height - filter.length/2; y--) {
             double[][] newFilter = createMatrixForBlur((int)Math.pow(1+2*(height-y), 2));
             System.out.println(newFilter.length);
