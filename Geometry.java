@@ -1,9 +1,12 @@
 
 /**
- * Write a description of class Geometry here.
+ * Class with functions for drawing geometric things.
  *
- * @author (your name)
- * @version (a version number or a date)
+ * @author Max Wenk
+ * @version 6/21/2022
+ * 
+ * Funtions:
+ * - ellipse(int sizeX, int sizeY) => returns an array
  */
 
 import java.lang.Math;
