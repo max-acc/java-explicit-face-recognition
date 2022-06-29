@@ -121,7 +121,40 @@ public class FaceRecognition
 
     //Function for skin color detection
     private int[][] skinColor (Picture originalImg, int[][] possibleFacePosition) {
+        Color[][] inputImg = originalImg.getPixelArray();
+        Color[] skinColors = {new Color(255, 204, 153), /*FFCC99*/
+                new Color(191, 153, 115),       /*BF9973*/ 
+                new Color(128, 102,  77),       /*80664D*/
+                new Color( 64,  51,  38),       /*403326*/
+                new Color(230, 184, 138),       /*E6B88A*/
+                new Color(179, 134,  89),       /*B38659*/
+                new Color(255, 217, 179)};      /*FFD9B3*/
+        int[] tempVar = new int[skinColors.length];
         int end = possibleFacePosition.length;
+        int colorTolerance = 15;
+        
+        for (int i = 0; i < possibleFacePosition.length; i++) {
+            for (int x = possibleFacePosition[i][0]; x < possibleFacePosition[i][0]+possibleFacePosition[i][2]; x++) {
+                for (int y = possibleFacePosition[i][1]; y < possibleFacePosition[i][1]+possibleFacePosition[i][3]; y++) {
+                    for (int j = 0; j < skinColors.length; j++) {
+                        if((inputImg[x][y].getRed() >= skinColors[j].getRed()-colorTolerance && inputImg[x][y].getRed() <= skinColors[j].getRed()+colorTolerance) && (inputImg[x][y].getGreen() >= skinColors[j].getGreen()-colorTolerance && inputImg[x][y].getGreen() <= skinColors[j].getGreen()+colorTolerance) && (inputImg[x][y].getBlue() >= skinColors[j].getBlue()-colorTolerance && inputImg[x][y].getBlue() <= skinColors[j].getBlue()+colorTolerance)) {
+                            tempVar[j] += 1;
+                        }
+                    }
+                }
+            }
+            for (int j = 0; j < skinColors.length; j++) {
+                if ((possibleFacePosition[i][2]*possibleFacePosition[i][3])*0.1 < tempVar[j]) break;
+                if ((possibleFacePosition[i][2]*possibleFacePosition[i][3])*0.1 > tempVar[j] && j == skinColors.length - 1) {
+                    possibleFacePosition[i][0] = 0;
+                    possibleFacePosition[i][1] = 0;
+                    possibleFacePosition[i][2] = 0;
+                    possibleFacePosition[i][3] = 0;
+                }
+            }
+            
+        }
+        
 
         for (int i = 0; i < possibleFacePosition.length-1; i++) {
             if (possibleFacePosition[i][0] == 0 && possibleFacePosition[i][1] == 0 && possibleFacePosition[i][2] == 0 && possibleFacePosition[i][3] == 0) {
