@@ -7,7 +7,7 @@
  * https://colorcodes.io/fair-skin-color-codes/
  * 
  * Required classes:
- * - Foling.java
+ * - Folding.java
  * - ColorEdit.java
  * - Geometry.java
  *
@@ -51,9 +51,7 @@ public class FaceRecognition
         pixelEdgeDetectionVertical  = null;
         System.gc();
 
-        
         //Mouth/Nose detection
-
         //Face-boundary detection
         externClassGeometry = new Geometry();
         int[][] facePositionInfoEdge = facePosition(originalImg);
@@ -62,7 +60,7 @@ public class FaceRecognition
         int[][] facePositionInfoColor = skinColor(originalImg, facePositionInfoEdge);
         facePositionInfoEdge    = null;
         System.gc();
-        
+
         //Eye detection
         /*int[][] facePositionInfoEye = eyeDetection(originalImg, facePositionInfoColor);
         facePositionInfoColor   = null;
@@ -78,7 +76,7 @@ public class FaceRecognition
             img.setPixelArray(output);
             return img;
         }
-        
+
         Picture backgroundImg = externClassFolding.intentionalBlur(originalImg, 50);
         Color[][] originalPixel = originalImg.getPixelArray();
         Color[][] backgroundPixel = backgroundImg.getPixelArray();
@@ -94,15 +92,14 @@ public class FaceRecognition
             int[][] matrix = externClassGeometry.ellipse(facePositionInfo[i][2], facePositionInfo[i][3]);
             /*
             for (int x = 0; x < width; x++) {
-                for (int y = 0; y < height; y++) {
-                    if (x > facePositionInfo[i][0] && x > facePositionInfo[i][0] + facePositionInfo[i][2] && y > facePositionInfo[i][1] && y < facePositionInfo[i][1] + facePositionInfo[i][3]) {
-                        backgroundPixel[x][y] = originalPixel[x][y];
-                    }
-                    
-                }
+            for (int y = 0; y < height; y++) {
+            if (x > facePositionInfo[i][0] && x > facePositionInfo[i][0] + facePositionInfo[i][2] && y > facePositionInfo[i][1] && y < facePositionInfo[i][1] + facePositionInfo[i][3]) {
+            backgroundPixel[x][y] = originalPixel[x][y];
+            }
+
+            }
             }*/
-            
-            
+
             drawEllipse:
             for (int x = 0; x < facePositionInfo[i][2]; x++) {
                 boolean temp = false;
@@ -120,13 +117,13 @@ public class FaceRecognition
                         //backgroundPixel[facePositionInfo[i][0] + x][facePositionInfo[i][1] + y] = Color.GREEN;
                         temp = true;
                         backgroundPixel[facePositionInfo[i][0] + x][facePositionInfo[i][1] + y] = originalPixel[facePositionInfo[i][0] + x][facePositionInfo[i][1] + y];
-                        
+
                         /*for (int j = y+1;j < facePositionInfo[i][1] + facePositionInfo[i][3] && matrix[x][j-y-1] == 0; j++) {
-                            /*System.out.println(x);
-                            System.out.println(j);
-                            System.out.println(j-y);
-                            System.out.println(facePositionInfo[i][1] + facePositionInfo[i][3]);
-                            backgroundPixel[facePositionInfo[i][0] + x][facePositionInfo[i][1] + j] = originalPixel[facePositionInfo[i][0] + x][facePositionInfo[i][1] + j];
+                        /*System.out.println(x);
+                        System.out.println(j);
+                        System.out.println(j-y);
+                        System.out.println(facePositionInfo[i][1] + facePositionInfo[i][3]);
+                        backgroundPixel[facePositionInfo[i][0] + x][facePositionInfo[i][1] + j] = originalPixel[facePositionInfo[i][0] + x][facePositionInfo[i][1] + j];
                         }*/
                         //break;
                     } 
@@ -161,9 +158,7 @@ public class FaceRecognition
         pixelEdgeDetectionVertical  = null;
         System.gc();
 
-        
         //Mouth/Nose detection
-
         //Face-boundary detection
         externClassGeometry = new Geometry();
         int[][] facePositionInfoEdge = facePosition(originalImg);
@@ -172,7 +167,7 @@ public class FaceRecognition
         int[][] facePositionInfoColor = skinColor(originalImg, facePositionInfoEdge);
         facePositionInfoEdge    = null;
         System.gc();
-        
+
         //Eye detection
         /*int[][] facePositionInfoEye = eyeDetection(originalImg, facePositionInfoColor);
         facePositionInfoColor   = null;
@@ -232,7 +227,7 @@ public class FaceRecognition
         }
         return correctSize;
     }
-    
+
     //Function for eye detection
     private int[][] eyeDetection (Picture originalImg, int[][] possibleFacePosition) {
         //Creating a clear edge detected face
@@ -249,10 +244,9 @@ public class FaceRecognition
         pixelEdgeDetectionHorizontal= null;
         pixelEdgeDetectionVertical  = null;
         System.gc();
-        
+
         int end = possibleFacePosition.length;
-        
-        
+
         for (int i = 0; i < possibleFacePosition.length-1; i++) {
             if (possibleFacePosition[i][0] == 0 && possibleFacePosition[i][1] == 0 && possibleFacePosition[i][2] == 0 && possibleFacePosition[i][3] == 0) {
                 end--;
@@ -264,7 +258,7 @@ public class FaceRecognition
                 }
             }
         }
-        
+
         if (false) {
             System.out.println("Face color isn't matching!");
             int[][] exeptionArray = new int[1][4];
@@ -279,7 +273,7 @@ public class FaceRecognition
         }
         return newFacePosition;
     }
-    
+
     //Function for skin color detection
     private int[][] skinColor (Picture originalImg, int[][] possibleFacePosition) {
         Color[][] inputImg = originalImg.getPixelArray();
@@ -293,7 +287,7 @@ public class FaceRecognition
         int[] tempVar = new int[skinColors.length];
         int end = possibleFacePosition.length;
         int colorTolerance = 15;
-        
+
         for (int i = 0; i < possibleFacePosition.length; i++) {
             for (int x = possibleFacePosition[i][0]; x < possibleFacePosition[i][0]+possibleFacePosition[i][2]; x++) {
                 for (int y = possibleFacePosition[i][1]; y < possibleFacePosition[i][1]+possibleFacePosition[i][3]; y++) {
@@ -313,9 +307,8 @@ public class FaceRecognition
                     possibleFacePosition[i][3] = 0;
                 }
             }
-            
+
         }
-        
 
         for (int i = 0; i < possibleFacePosition.length-1; i++) {
             if (possibleFacePosition[i][0] == 0 && possibleFacePosition[i][1] == 0 && possibleFacePosition[i][2] == 0 && possibleFacePosition[i][3] == 0) {
@@ -628,7 +621,7 @@ public class FaceRecognition
 
         int[][] ellipsePositionInfo = new int[startingPointX.length * startingPointY.length][4];
 
-        //Draw an ellipse
+        //Draw a virtual ellipse
         Color green = Color.GREEN;
         var = 0;
         for (int i = 0; i < ellipseWidth.length; i++) {
@@ -654,6 +647,19 @@ public class FaceRecognition
 
                 }
 
+            }
+        }
+        //Customization for larger face area
+        for (int i = 0; i < ellipsePositionInfo.length; i++) {
+            if ((ellipsePositionInfo[i][0] > 1 && ellipsePositionInfo[i][1] > 1) && (ellipsePositionInfo[i][2] != 0 && ellipsePositionInfo[i][3] != 0)) {
+                ellipsePositionInfo[i][0] = ellipsePositionInfo[i][0] - (int)(ellipsePositionInfo[i][2] *0.05);
+                if (ellipsePositionInfo[i][0] < 1) ellipsePositionInfo[i][0] = 1;
+                ellipsePositionInfo[i][1] = ellipsePositionInfo[i][1] - (int)(ellipsePositionInfo[i][3] *0.2);
+                if (ellipsePositionInfo[i][1] < 1) ellipsePositionInfo[i][1] = 1;
+                ellipsePositionInfo[i][2] = ellipsePositionInfo[i][2] + (int)(2* ellipsePositionInfo[i][2] *0.05);
+                if (ellipsePositionInfo[i][2] > width - ellipsePositionInfo[i][0]) ellipsePositionInfo[i][2] = width - ellipsePositionInfo[i][0];
+                ellipsePositionInfo[i][3] = ellipsePositionInfo[i][3] + (int)(2* ellipsePositionInfo[i][3] *0.2);
+                if (ellipsePositionInfo[i][3] > height- ellipsePositionInfo[i][1]) ellipsePositionInfo[i][3] = width - ellipsePositionInfo[i][1];
             }
         }
 
