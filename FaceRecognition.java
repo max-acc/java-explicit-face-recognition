@@ -26,12 +26,107 @@ public class FaceRecognition
     private Geometry externClassGeometry;
 
     public Picture bokehEffect (Picture originalImg) {
-        //Eye detection
+        int width = originalImg.getWidth();
+        int height = originalImg.getHeight();
+
+        //Check, if the image has the correct size (not too large or too small)
+        if (checkImgSize(width, height) == false) return originalImg;
+
+        externClassFolding = new Folding();
+        externClassColorEdit = new ColorEdit();
+        Picture imgEdgeDetectionHorizontal = externClassFolding.edgeDetectionHorizontally(externClassColorEdit.greyScaleAvg(originalImg));
+        Picture imgEdgeDetectionVertical   = externClassFolding.edgeDetectionVertically(externClassColorEdit.greyScaleAvg(originalImg));
+        Color [][] pixelEdgeDetectionHorizontal = imgEdgeDetectionHorizontal.getPixelArray();
+        Color [][] pixelEdgeDetectionVertical   = imgEdgeDetectionVertical.getPixelArray();
+        Color[][] pixelEdgeDetectionComplete = addEdgeDetectionAndAmplify(width, height, pixelEdgeDetectionHorizontal, pixelEdgeDetectionVertical);
+
+        //Deleting unused variables => only "pixelEdgeDetectionComplete" remains
+        imgEdgeDetectionHorizontal  = null;
+        imgEdgeDetectionVertical    = null;
+        pixelEdgeDetectionHorizontal= null;
+        pixelEdgeDetectionVertical  = null;
+        System.gc();
+
+        
         //Mouth/Nose detection
-        //Skin color detection
 
         //Face-boundary detection
-        return originalImg;
+        externClassGeometry = new Geometry();
+        int[][] facePositionInfoEdge = facePosition(originalImg);
+
+        //Skin color detection
+        int[][] facePositionInfoColor = skinColor(originalImg, facePositionInfoEdge);
+        facePositionInfoEdge    = null;
+        System.gc();
+        
+        //Eye detection
+        /*int[][] facePositionInfoEye = eyeDetection(originalImg, facePositionInfoColor);
+        facePositionInfoColor   = null;
+        System.gc();*/
+
+        int[][] facePositionInfo = facePositionInfoColor;
+        Color[][] output = originalImg.getPixelArray();
+        printPositionArray(facePositionInfo);
+
+        if (facePositionInfo.length == 1 && facePositionInfo[0][0] == 0 && facePositionInfo[0][1] == 0 && facePositionInfo[0][2] == 0 && facePositionInfo[0][3] == 0) {
+            System.out.println("Some required face matching criteria isn't met!");
+            Picture img = new Picture();
+            img.setPixelArray(output);
+            return img;
+        }
+        
+        Picture backgroundImg = externClassFolding.intentionalBlur(originalImg, 50);
+        Color[][] originalPixel = originalImg.getPixelArray();
+        Color[][] backgroundPixel = backgroundImg.getPixelArray();
+
+        for (int i = 0; i < facePositionInfo.length; i++) {
+            if (facePositionInfo[i][0] == 0 || facePositionInfo[i][1] == 0) {
+                continue;
+            }
+            if (facePositionInfo[i][2] == 0 || facePositionInfo[i][3] == 0) {
+                continue;
+            }
+
+            int[][] matrix = externClassGeometry.ellipse(facePositionInfo[i][2], facePositionInfo[i][3]);
+            /*
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
+                    if (x > facePositionInfo[i][0] && x > facePositionInfo[i][0] + facePositionInfo[i][2] && y > facePositionInfo[i][1] && y < facePositionInfo[i][1] + facePositionInfo[i][3]) {
+                        backgroundPixel[x][y] = originalPixel[x][y];
+                    }
+                    
+                }
+            }*/
+            
+            
+            drawEllipse:
+            for (int x = 0; x < facePositionInfo[i][2]; x++) {
+                boolean temp = false;
+                //System.out.println("First loop");
+                for (int y = 0; y < facePositionInfo[i][3]; y++) {
+                    //System.out.println("Second loop");
+                    if(x == (int)(facePositionInfo[i][2]*0.2) || x == facePositionInfo[i][2]-1 || x == (int)(facePositionInfo[i][3]*0.6) || y == facePositionInfo[i][3]-1) {
+                        //output[facePositionInfo[i][0] + x][facePositionInfo[i][1] + y] = Color.GREEN;
+                    }
+                    if (matrix[x][y] == 1) {
+                        //backgroundPixel[facePositionInfo[i][0] + x][facePositionInfo[i][1] + y] = Color.GREEN;
+                        temp = true;
+                        for (int j = y+1;j < facePositionInfo[i][1] + facePositionInfo[i][3]/* && matrix[x][j-y-1] == 0*/; j++) {
+                            /*System.out.println(x);
+                            System.out.println(j);
+                            System.out.println(j-y);
+                            System.out.println(facePositionInfo[i][1] + facePositionInfo[i][3]);*/
+                            backgroundPixel[facePositionInfo[i][0] + x][facePositionInfo[i][1] + j] = originalPixel[facePositionInfo[i][0] + x][facePositionInfo[i][1] + j];
+                        }
+                        break;
+                    } 
+                }
+            }
+        }
+
+        Picture newImg = new Picture();
+        newImg.setPixelArray(backgroundPixel);
+        return newImg;
     }
 
     public Picture faceRecognition (Picture originalImg) {
@@ -56,7 +151,7 @@ public class FaceRecognition
         pixelEdgeDetectionVertical  = null;
         System.gc();
 
-        //Eye detection
+        
         //Mouth/Nose detection
 
         //Face-boundary detection
@@ -65,6 +160,13 @@ public class FaceRecognition
 
         //Skin color detection
         int[][] facePositionInfoColor = skinColor(originalImg, facePositionInfoEdge);
+        facePositionInfoEdge    = null;
+        System.gc();
+        
+        //Eye detection
+        /*int[][] facePositionInfoEye = eyeDetection(originalImg, facePositionInfoColor);
+        facePositionInfoColor   = null;
+        System.gc();*/
 
         int[][] facePositionInfo = facePositionInfoColor;
         Color[][] output = originalImg.getPixelArray();
@@ -91,7 +193,9 @@ public class FaceRecognition
                 //System.out.println("First loop");
                 for (int y = 0; y < facePositionInfo[i][3]; y++) {
                     //System.out.println("Second loop");
-
+                    if(x == (int)(facePositionInfo[i][2]*0.2) || x == facePositionInfo[i][2]-1 || x == (int)(facePositionInfo[i][3]*0.6) || y == facePositionInfo[i][3]-1) {
+                        //output[facePositionInfo[i][0] + x][facePositionInfo[i][1] + y] = Color.GREEN;
+                    }
                     if (matrix[x][y] == 1) {
                         output[facePositionInfo[i][0] + x][facePositionInfo[i][1] + y] = Color.GREEN;
                     } 
@@ -118,7 +222,54 @@ public class FaceRecognition
         }
         return correctSize;
     }
+    
+    //Function for eye detection
+    private int[][] eyeDetection (Picture originalImg, int[][] possibleFacePosition) {
+        //Creating a clear edge detected face
+        externClassFolding = new Folding();
+        externClassColorEdit = new ColorEdit();
+        Picture imgEdgeDetectionHorizontal = externClassFolding.edgeDetectionHorizontally(externClassColorEdit.greyScaleAvg(originalImg));
+        Picture imgEdgeDetectionVertical   = externClassFolding.edgeDetectionVertically(externClassColorEdit.greyScaleAvg(originalImg));
+        Color [][] pixelEdgeDetectionHorizontal = imgEdgeDetectionHorizontal.getPixelArray();
+        Color [][] pixelEdgeDetectionVertical   = imgEdgeDetectionVertical.getPixelArray();
+        Color[][] pixelEdgeDetectionComplete = addEdgeDetectionAndAmplify(originalImg.getWidth(), originalImg.getHeight(), pixelEdgeDetectionHorizontal, pixelEdgeDetectionVertical);
+        //Deleting unused variables => only "pixelEdgeDetectionComplete" remains
+        imgEdgeDetectionHorizontal  = null;
+        imgEdgeDetectionVertical    = null;
+        pixelEdgeDetectionHorizontal= null;
+        pixelEdgeDetectionVertical  = null;
+        System.gc();
+        
+        int end = possibleFacePosition.length;
+        
+        
+        for (int i = 0; i < possibleFacePosition.length-1; i++) {
+            if (possibleFacePosition[i][0] == 0 && possibleFacePosition[i][1] == 0 && possibleFacePosition[i][2] == 0 && possibleFacePosition[i][3] == 0) {
+                end--;
+                for (int j = i; j < possibleFacePosition.length-1; j++) {
+                    possibleFacePosition[j][0] = possibleFacePosition[j+1][0];
+                    possibleFacePosition[j][1] = possibleFacePosition[j+1][1];
+                    possibleFacePosition[j][2] = possibleFacePosition[j+1][2];
+                    possibleFacePosition[j][3] = possibleFacePosition[j+1][3];
+                }
+            }
+        }
+        
+        if (false) {
+            System.out.println("Face color isn't matching!");
+            int[][] exeptionArray = new int[1][4];
+            return exeptionArray;
+        }
 
+        int[][] newFacePosition = new int[end][4];
+        for (int i = 0; i < end; i++) {
+            for (int j = 0; j < 4; j++) {
+                newFacePosition[i][j] = possibleFacePosition[i][j];
+            }
+        }
+        return newFacePosition;
+    }
+    
     //Function for skin color detection
     private int[][] skinColor (Picture originalImg, int[][] possibleFacePosition) {
         Color[][] inputImg = originalImg.getPixelArray();
