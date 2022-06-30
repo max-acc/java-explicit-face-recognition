@@ -35,7 +35,7 @@ public class Folding {
         //System.out.println("Left");
         for (int x = 1; x < filter.length/2; x++) {
             double[][] newFilter = createMatrixForBlur((int)Math.pow(1+2*x, 2));
-            System.out.println(newFilter.length);
+            //System.out.println(newFilter.length);
             for (int y = x; y < height - x; y++) {
                 //Initialising and declaring default values for the red, green and blue color values
                 double red, green, blue = green = red = 0.0;
@@ -65,7 +65,7 @@ public class Folding {
         //System.out.println("Right");
         for (int x = width - 1; x >= width - filter.length/2; x--) {
             double[][] newFilter = createMatrixForBlur((int)Math.pow(1+2*(width-x), 2));
-            System.out.println(newFilter.length);
+            //System.out.println(newFilter.length);
             for (int y = width - x; y < height -(width-x); y++) {
                 //Initialising and declaring default values for the red, green and blue color values
                 double red, green, blue = green = red = 0.0;
@@ -96,7 +96,7 @@ public class Folding {
         //System.out.println("Upper");
         for (int y = 1; y < filter.length/2; y++) {
             double[][] newFilter = createMatrixForBlur((int)Math.pow(1+2*y, 2));
-            System.out.println(newFilter.length);
+            //System.out.println(newFilter.length);
             for (int x = y; x < width - y; x++) {
                 //Initialising and declaring default values for the red, green and blue color values
                 double red, green, blue = green = red = 0.0;
@@ -126,7 +126,7 @@ public class Folding {
         //System.out.println("Lower");
         for (int y = height - 1; y >= height - filter.length/2; y--) {
             double[][] newFilter = createMatrixForBlur((int)Math.pow(1+2*(height-y), 2));
-            System.out.println(newFilter.length);
+            //System.out.println(newFilter.length);
             for (int x = height - y; x < width -(height-y); x++) {
                 //Initialising and declaring default values for the red, green and blue color values
                 double red, green, blue = green = red = 0.0;
