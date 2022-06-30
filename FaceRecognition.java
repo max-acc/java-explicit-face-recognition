@@ -13,6 +13,10 @@
  *
  * @author Max Wenk
  * @version 6/28/2022
+ * 
+ * Funtions:
+ * - bokehEffect(Picture originalImg)
+ * - faceRecognition(Picture originalImg)
  */
 
 import imp.*;
@@ -108,17 +112,23 @@ public class FaceRecognition
                     if(x == (int)(facePositionInfo[i][2]*0.2) || x == facePositionInfo[i][2]-1 || x == (int)(facePositionInfo[i][3]*0.6) || y == facePositionInfo[i][3]-1) {
                         //output[facePositionInfo[i][0] + x][facePositionInfo[i][1] + y] = Color.GREEN;
                     }
-                    if (matrix[x][y] == 1) {
+                    double left = Math.pow(x-(int)(facePositionInfo[i][2]/2), 2) / Math.pow((int)(facePositionInfo[i][2]/2), 2);
+                    double right= Math.pow(y-(int)(facePositionInfo[i][3]/2), 2) / Math.pow((int)(facePositionInfo[i][3]/2), 2);
+                    double equation = left + right;
+                    //System.out.println(equation);
+                    if (equation <= 1/*matrix[x][y] == 1*/) {
                         //backgroundPixel[facePositionInfo[i][0] + x][facePositionInfo[i][1] + y] = Color.GREEN;
                         temp = true;
-                        for (int j = y+1;j < facePositionInfo[i][1] + facePositionInfo[i][3]/* && matrix[x][j-y-1] == 0*/; j++) {
+                        backgroundPixel[facePositionInfo[i][0] + x][facePositionInfo[i][1] + y] = originalPixel[facePositionInfo[i][0] + x][facePositionInfo[i][1] + y];
+                        
+                        /*for (int j = y+1;j < facePositionInfo[i][1] + facePositionInfo[i][3] && matrix[x][j-y-1] == 0; j++) {
                             /*System.out.println(x);
                             System.out.println(j);
                             System.out.println(j-y);
-                            System.out.println(facePositionInfo[i][1] + facePositionInfo[i][3]);*/
+                            System.out.println(facePositionInfo[i][1] + facePositionInfo[i][3]);
                             backgroundPixel[facePositionInfo[i][0] + x][facePositionInfo[i][1] + j] = originalPixel[facePositionInfo[i][0] + x][facePositionInfo[i][1] + j];
-                        }
-                        break;
+                        }*/
+                        //break;
                     } 
                 }
             }
@@ -545,7 +555,7 @@ public class FaceRecognition
                 for (int y = 0; y < height; y++) {
                     if (changedLargestFrequenceVertical[x][y] == edgeFrequenceVertical[i]) {
                         changedLargestFrequenceVertical[x][y] = 0;
-                        System.out.println(x);
+                        //System.out.println(x);
                         x1 = x;
                         y1 = y;
                         break firstNumber;
@@ -587,7 +597,7 @@ public class FaceRecognition
                 for (int y = 0; y < height; y++) {
                     if (changedLargestFrequenceHorizontal[x][y] == edgeFrequenceHorizontal[i]) {
                         changedLargestFrequenceHorizontal[x][y] = 0;
-                        System.out.println(x);
+                        //System.out.println(x);
                         x1 = x;
                         y1 = y;
                         break firstNumber;
@@ -721,83 +731,5 @@ public class FaceRecognition
         }
 
         return output;
-    }
-
-    //---------------------- not in use -------------------------------------------------------------
-    private Picture extractFace (Picture originalImg) {
-        Color[] skinColors = {new Color(255, 204, 153), /*FFCC99*/
-                new Color(191, 153, 115),       /*BF9973*/ 
-                new Color(128, 102,  77),       /*80664D*/
-                new Color( 64,  51,  38),       /*403326*/
-                new Color(230, 184, 138),       /*E6B88A*/
-                new Color(179, 134,  89),       /*B38659*/
-                new Color(255, 217, 179)};      /*FFD9B3*/
-
-        int width = originalImg.getWidth();
-        int height = originalImg.getHeight();
-
-        Color[][] pixelOld = originalImg.getPixelArray();
-        Color[][] pixelNew = new Color[width][height];
-
-        if (width < 50 || height < 50) {
-            System.out.println("Image is too small");
-            return originalImg;
-        }
-
-        //Boolean for image orientation and integer for smallest side
-        boolean orientationHorizontal;
-        int smallestSide;
-        if (height > width) {
-            orientationHorizontal = false;
-            smallestSide = width;
-        }else if (height == width) {
-            orientationHorizontal = true;
-            smallestSide = height;
-        }else {
-            orientationHorizontal = true;
-            smallestSide = height;
-        }
-
-        //Decrementing through different possible image sizes
-        //for (int recoSize = smallestSide; recoSize >= 50; recoSize -= 10) {
-        // System.out.println(recoSize);
-        int recoSize = 600;
-        if (true) {  //For later direction adaption
-            for (int x = 0; x < width - recoSize; x+= (int)(recoSize*0.25)) {
-                for (int y = 0; y < height - recoSize; y+= (int)(recoSize*0.25)) {
-                    double avgRed   = 0;
-                    double avgGreen = 0;
-                    double avgBlue  = 0;
-                    int[] skinColorsFrequency = new int[skinColors.length];
-                    for (int i = 0; i < skinColorsFrequency.length; i++) {
-                        skinColorsFrequency[i] = 0;
-                    }
-
-                    for (int i = 0; i < recoSize; i++) {
-                        for (int j = 0; j < recoSize; j++) {
-                            for (int k = 0; k < skinColors.length; k++) {
-                                if (pixelOld[x+i][y+j].getRed() == skinColors[0].getRed() && pixelOld[x+i][y+j].getGreen() == skinColors[0].getGreen() && pixelOld[x+i][y+j].getBlue() == skinColors[0].getBlue()) {
-                                    skinColorsFrequency[0] += 1;
-                                }
-                            }
-                            avgRed   += pixelOld[x+i][y+j].getRed();
-                            avgGreen += pixelOld[x+i][y+j].getGreen();
-                            avgBlue  += pixelOld[x+i][y+j].getBlue();
-                        }
-                    }
-                    avgRed = avgRed / Math.pow(recoSize, 2);
-                    avgGreen = avgGreen / Math.pow(recoSize, 2);
-                    avgBlue = avgBlue / Math.pow(recoSize, 2);
-                    System.out.println(skinColorsFrequency[0]);
-                    //System.out.println(avgRed);
-                    //System.out.println(avgGreen);
-                    //System.out.println(avgBlue);
-                }
-            }
-        }
-
-        //}
-
-        return originalImg;
     }
 }
